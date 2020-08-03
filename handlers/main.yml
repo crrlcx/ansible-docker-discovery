@@ -1,0 +1,17 @@
+---
+# handlers file for ansible-docker-discovery
+- name: docker cleanup
+  docker_prune:
+    containers: false
+    containers_filters:
+      until: 24h
+    images: yes
+    images_filters:
+      until: 24h
+    networks: yes
+    volumes: yes
+    builder_cache: yes
+  when:
+    - deploy_project.type == 'container'
+  tags:
+    - always

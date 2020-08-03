@@ -1,0 +1,45 @@
+---
+# tasks file for ansible-docker-discovery
+- name: docker discovery | Create network
+  docker_network:
+    attachable: true
+    name: "{{ docker_discovery.name }}_{{ docker_discovery.network }}"
+    driver_options:
+      com.docker.network.bridge.name: "br-{{ docker_discovery.name }}"
+  register: docker_discovery_network
+  when:
+    - docker_discovery.network is defined
+    - docker_discovery.network | length > 0
+  tags:
+    - always
+
+- name: docker discovery | Run container
+  docker_container:
+    command: "{{ docker_discovery.command }}"
+    comparisons:
+      env: strict
+      image: strict
+    cpu_quota: "{{ docker_discovery.cpu_quota }}"
+    image: "{{ docker_discovery.name }}:{{ docker_discovery.ver }}"
+    # labels: "{{ docker_discovery.labels }}"
+    memory: "{{ docker_discovery.memory }}"
+    memory_reservation: "{{  docker_discovery.memory_reservation }}"
+    name: "{{ docker_discovery.name }}_app_{{ item }}"
+    networks:
+      - name: "{{ docker_discovery.name }}_{{ docker_discovery.network }}"
+    networks_cli_compatible: true
+    ports: "{{ docker_discovery.ports }}"
+    pull: true
+    recreate: true
+    restart_policy: 'unless-stopped'
+    state: started
+    sysctls: "{{ docker_discovery.sysctls }}"
+    ulimits: "{{ docker_discovery.ulimits }}"
+    volumes: "{{ docker_discovery.volumes }}"
+  with_sequence: count={{ docker_discovery.count | d(1) }}
+  when:
+    - docker_discovery.network is defined
+    - docker_discovery.network | length > 0
+    - docker_discovery_network is defined
+  tags:
+    - always

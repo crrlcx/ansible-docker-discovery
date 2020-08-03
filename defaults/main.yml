@@ -1,0 +1,39 @@
+---
+# defaults file for ansible-docker-discovery
+docker_discovery_enabled: false
+
+docker_discovery:
+  name: 'traefik'
+  network: 'lb'
+  ver: 'v2.0'
+  command:
+    - '--log.level=INFO'
+    - '--api.insecure=true'
+    - '--api.dashboard=true'
+    - '--providers.docker=true'
+    - '--providers.docker.exposedbydefault=false'
+    - '--providers.docker.network=traefik_lb'
+    - '--providers.docker.useBindPortIP=false'
+    - '--entrypoints.http3000.address=:3000'
+    - '--entryPoints.http3000.proxyProtocol.insecure=true'
+    - '--entryPoints.http3000.forwardedHeaders.insecure=true'
+    - '--entrypoints.http8000.address=:8000'
+    - '--entryPoints.http8000.proxyProtocol.insecure=true'
+    - '--entryPoints.http8000.forwardedHeaders.insecure=true'
+  ports:
+    - 3000:3000/tcp
+    - 8000:8000/tcp
+    - 8080:8080/tcp
+  volumes:
+    - /var/run/docker.sock:/var/run/docker.sock:ro
+  cpu_quota: '100000'
+  cpu_period: '100000'
+  memory_reservation: '250M'
+  memory: '1000M'
+  sysctls:
+    net.core.somaxconn: '32768'
+    net.ipv4.tcp_syncookies: '0'
+  ulimits:
+    - 'nproc:65536'
+    - 'nofile:32768:65536'
+    - 'memlock:-1:-1'
